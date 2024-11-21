@@ -1,62 +1,36 @@
-
-import ccxt
+from binance.client import Client
 import pandas as pd
-import ta  # Technical analysis library for indicators
+import time
 
-# Initialize Binance API
-exchange = ccxt.binance({
-    'rateLimit': 1200,
-    'enableRateLimit': True,
-})
+# Binance API keys
+api_key = "your_api_key"
+api_secret = "your_api_secret"
 
-# Fetch Historical Data
-def fetch_historical_data(symbol, timeframe, since):
-    """
-    Fetch historical OHLCV data from Binance.
-    :param symbol: Trading pair symbol, e.g., 'BTC/USDT'
-    :param timeframe: Candle timeframe, e.g., '1h', '4h', '1d'
-    :param since: Timestamp in milliseconds to fetch data since
-    :return: DataFrame with OHLCV data
-    """
-    ohlcv = exchange.fetch_ohlcv(symbol, timeframe, since=since)
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-    return df
+client = Client(api_key, api_secret)
 
-# Generate Features
-def generate_features(df):
+def fetch_data(symbol="BTCUSDT", interval=Client.KLINE_INTERVAL_1MINUTE, limit=100):
     """
-    Add technical indicators and additional features to the data.
-    :param df: DataFrame with OHLCV data
-    :return: DataFrame with new features
+    Fetch historical klines from Binance.
+    :param symbol: Trading pair (e.g., "BTCUSDT")
+    :param interval: Kline interval (e.g., "1m", "5m")
+    :param limit: Number of klines to fetch
+    :return: pandas DataFrame with columns ['timestamp', 'open', 'high', 'low', 'close', 'volume']
     """
-    # Add RSI
-    df['rsi'] = ta.momentum.rsi(df['close'], window=14)
-    # Add EMA
-    df['ema'] = ta.trend.ema_indicator(df['close'], window=20)
-    # Add Bollinger Bands
-    bb = ta.volatility.BollingerBands(df['close'], window=20)
-    df['bb_high'] = bb.bollinger_hband()
-    df['bb_low'] = bb.bollinger_lband()
-    # Add returns
-    df['returns'] = df['close'].pct_change()
-    # Add rolling volatility
-    df['volatility'] = df['returns'].rolling(window=20).std()
-    return df.dropna()
+    print(f"Fetching data for {symbol}...")
+    klines = client.get_klines(symbol=symbol, interval=interval, limit=limit)
+    data = {
+        "timestamp": [int(k[0]) for k in klines],
+        "open": [float(k[1]) for k in klines],
+        "high": [float(k[2]) for k in klines],
+        "low": [float(k[3]) for k in klines],
+        "close": [float(k[4]) for k in klines],
+        "volume": [float(k[5]) for k in klines],
+    }
+    return pd.DataFrame(data)
 
-# Main
 if __name__ == "__main__":
-    symbol = 'BTC/USDT'
-    timeframe = '1h'  # 1-hour candles
-    since = exchange.parse8601('2023-01-01T00:00:00Z')  # Fetch data from Jan 1, 2023
+    while True:
+        df = fetch_data()
+        print(df.tail())  # Display the last 5 rows
+        time.sleep(60)  # Fetch every minute
 
-    print("Fetching historical data...")
-    df = fetch_historical_data(symbol, timeframe, since)
-    
-    print("Generating features...")
-    df = generate_features(df)
-
-    print("Saving to CSV...")
-    output_file = f"{symbol.replace('/', '_')}_historical_data.csv"
-    df.to_csv(output_file, index=False)
-    print(f"Data saved to {output_file}")
