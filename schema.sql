@@ -1,0 +1,33 @@
+DROP TABLE IF EXISTS crypto_data;
+
+CREATE TABLE crypto_data (
+    timestamp TEXT,
+    close REAL,
+    open REAL,
+    high REAL,
+    low REAL,
+    volume REAL,
+    SMA REAL,
+    EMA REAL,
+    RSI REAL,
+    MACD REAL,
+    MACD_Signal REAL,
+    MACD_Hist REAL,
+    ATR REAL,
+    UpperBB REAL,
+    MiddleBB REAL,
+    LowerBB REAL,
+    Stochastic_RSI_K REAL,
+    Stochastic_RSI_D REAL,
+    Williams_R REAL,
+    OBV REAL,
+    CMF REAL,
+    ROC REAL,
+    CCI REAL,
+    MOM REAL,
+    ULTOSC REAL,
+    EOM REAL,
+    AD REAL,
+    ADX REAL,
+    Force_Index REAL
+);
