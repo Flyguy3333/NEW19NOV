@@ -1,4 +1,4 @@
-#!/workspaces/NEW19NOV/env/bin/python3
+#!/workspaces/NEW19NOV/env/bin/python3.10
 # -*- coding: utf-8 -*-
 import re
 import sys
