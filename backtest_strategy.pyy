@@ -1,0 +1,29 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load historical data
+df = pd.read_csv("data/historical_data.csv")
+
+# Define a simple strategy: Buy when RSI < 30, Sell when RSI > 70
+df['Signal'] = 0
+df.loc[df['RSI'] < 30, 'Signal'] = 1  # Buy signal
+df.loc[df['RSI'] > 70, 'Signal'] = -1  # Sell signal
+
+# Calculate strategy profit/loss
+df['Position'] = df['Signal'].shift().fillna(0)  # Shift to align with next day
+df['Daily_Return'] = df['close'].pct_change()
+df['Strategy_Return'] = df['Position'] * df['Daily_Return']
+
+# Plot strategy performance
+plt.figure(figsize=(10, 6))
+plt.plot((1 + df['Daily_Return']).cumprod(), label='Market Return')
+plt.plot((1 + df['Strategy_Return']).cumprod(), label='Strategy Return')
+plt.title('Strategy vs Market Performance')
+plt.xlabel('Timestamp')
+plt.ylabel('Cumulative Returns')
+plt.legend()
+plt.show()
+
+# Print results
+print("Total Strategy Return: {:.2f}%".format((1 + df['Strategy_Return']).cumprod().iloc[-1] * 100 - 100))
+print("Total Market Return: {:.2f}%".format((1 + df['Daily_Return']).cumprod().iloc[-1] * 100 - 100))

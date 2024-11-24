@@ -1,26 +1,75 @@
-import pandas as pd
-from sqlalchemy import create_engine
-from indicators import calculate_indicators  # Importing the function to calculate indicators
+import logging
+import sqlite3
+from datetime import datetime
+import ccxt
 
-# Create a mock DataFrame to simulate data collection
-data = pd.DataFrame({
-    "timestamp": pd.date_range(start="2024-11-21 00:00", periods=100, freq="min"),
-    "close": range(100, 200),
-    "open": range(99, 199),
-    "high": [x + 5 for x in range(100, 200)],
-    "low": [x - 5 for x in range(100, 200)],
-    "volume": [10 for _ in range(100)]
+# Configure logging
+logging.basicConfig(
+    filename='collector.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+# Initialize exchange
+exchange = ccxt.binance({
+    'rateLimit': 1200,
+    'enableRateLimit': True,
 })
 
-# Apply indicators
-data = calculate_indicators(data)
+# Database setup
+db_path = 'crypto_data.db'
 
-# Save to SQLite database
-engine = create_engine("sqlite:///crypto_data.db")
+def create_table():
+    """Create a table for storing crypto data."""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS market_data (
+            id INTEGER PRIMARY KEY,
+            symbol TEXT,
+            timestamp DATETIME,
+            open REAL,
+            high REAL,
+            low REAL,
+            close REAL,
+            volume REAL
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-try:
-    data.to_sql("crypto_data", engine, if_exists="append", index=False)
-    print("Data saved successfully!")
-except Exception as e:
-    print(f"Error saving to database: {e}")
+def fetch_and_store_data():
+    """Fetch data from Binance and store it in the database."""
+    try:
+        # Fetch ticker data
+        ticker_data = exchange.fetch_tickers()
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
+        for symbol, data in ticker_data.items():
+            if 'close' in data:
+                cursor.execute("""
+                    INSERT INTO market_data (symbol, timestamp, open, high, low, close, volume)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    symbol,
+                    datetime.utcfromtimestamp(data['timestamp'] / 1000),
+                    data.get('open', 0),
+                    data.get('high', 0),
+                    data.get('low', 0),
+                    data.get('close', 0),
+                    data.get('quoteVolume', 0)
+                ))
+
+        conn.commit()
+        conn.close()
+        logging.info("Data fetched and stored successfully.")
+
+    except Exception as e:
+        logging.error(f"Error fetching or storing data: {e}")
+
+if __name__ == "__main__":
+    logging.info("Starting collector script...")
+    create_table()
+    fetch_and_store_data()
+    logging.info("Collector script completed.")
