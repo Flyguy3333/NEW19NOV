@@ -1,2 +1,9 @@
-.env
-bot.log
+# Byte-compiled files
+*.pyc
+__pycache__/
+
+# Virtual environment
+env/
+
+# Temporary files
+*.swp
