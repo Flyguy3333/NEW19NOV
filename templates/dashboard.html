@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Dashboard</title>
+</head>
+<body>
+    <h1>Top Indicators</h1>
+    <ul>
+        {% for feature, importance in data.items() %}
+        <li>{{ feature }}: {{ importance }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
