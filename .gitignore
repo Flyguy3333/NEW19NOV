@@ -1,24 +1,68 @@
-# Ignore Python bytecode files
+# Swap files
+*.swp
+
+# Byte-compiled Python files
+*.pyc
+*.pyo
 __pycache__/
-*.py[cod]
 
-# Ignore temporary and log files
-*.log
-*.tmp
-*.pid
+# Virtual environment
+env/
+venv/
 
-# Ignore TA-Lib and other build artifacts
-ta-lib/
-*.o
-*.lo
-*.a
-*.tar.gz
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
 
-# Ignore large model and data backups
-models/
-*.h5
-*.pickle
+# Database files
+*.sqlite3
 *.db
 
-# Ignore environment files (avoid committing sensitive info)
-.env
+# Log files
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Python cache files
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+
+# Package management files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE-specific files
+.vscode/
+.idea/
+*.iml
+
+# Archive files
+*.tar.gz
+*.zip
+
+# Generated documentation
+docs/_build/
+
+# Local scripts or binaries
+*.sh
+*.exe
+*.out
+
+# Static and media files
+staticfiles/
+media/
+
+# Technical analysis data files
+technical_analysis/data/*.csv
+
+# Personal notes or temporary files
+*.note
+*.draft
