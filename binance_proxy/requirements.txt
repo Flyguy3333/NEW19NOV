@@ -1,0 +1,6 @@
+requests>=2.26.0
+pexpect>=4.8.0
+PySocks>=1.7.1
+urllib3>=2.0.0
+websockets>=10.0
+
